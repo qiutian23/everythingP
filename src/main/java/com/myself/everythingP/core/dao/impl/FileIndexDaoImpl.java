@@ -83,7 +83,6 @@ public class FileIndexDaoImpl implements FileIndexDao {
 
     @Override
     public void delete(Thing thing) {
-        //todo
         Connection connection = null;
         PreparedStatement statement = null;
         try {

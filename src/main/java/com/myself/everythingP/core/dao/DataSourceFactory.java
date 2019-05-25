@@ -58,12 +58,4 @@ public class DataSourceFactory {
         }
 
     }
-
-//    public static void main(String[] args) {
-////        String workDir=System.getProperty("user.dir");//E:\ALL-CODE\JAVA_code\everythingPractice
-////        System.out.println(workDir);
-////        System.out.println("jdbc:h2:"+workDir+ File.separator+"everythingPractice");//jdbc:h2:E:\ALL-CODE\JAVA_code\everythingPractice\everythingPractice
-////        System.out.println(DataSourceFactory.getInstance());
-////        DataSourceFactory.initDatabase();
-//    }
 }

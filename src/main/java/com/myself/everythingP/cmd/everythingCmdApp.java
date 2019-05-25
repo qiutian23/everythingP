@@ -24,15 +24,13 @@ public class everythingCmdApp {
         param(args);
         welcome();
         EverythingPManager manager = EverythingPManager.getInstance();
-//        manager.startThingClearThread();
+        manager.startThingClearThread();
         manager.startFileSystemMonitor();
         interactive(manager);
     }
 
     private static void printHR(LinkedList<String> historicalRecordsList) {
-        if (historicalRecordsList.size()==0) {
-            System.out.println("暂无历史搜索记录");
-        } else {
+        if (historicalRecordsList.size() != 0) {
             System.out.println("历史搜索记录：");
             for (String l : historicalRecordsList) {
                 System.out.print(l + " ");
@@ -91,7 +89,6 @@ public class everythingCmdApp {
 
     private static void interactive(EverythingPManager manager) {
         while (true) {
-            printHR(historicalRecordsList);
             System.out.print(">>");
             String line = scanner.nextLine();
             if (line.startsWith("search")) {
@@ -127,6 +124,7 @@ public class everythingCmdApp {
                     }
                     historicalRecordsList.addFirst(record);
                     search(manager, condition);
+                    printHR(historicalRecordsList);
                     continue;
                 } else {
                     help();

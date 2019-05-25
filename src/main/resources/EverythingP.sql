@@ -1,5 +1,5 @@
 -- 创建数据库
--- create database if not exists everythingPractice;
+-- create database if not exists everythingP;
 -- 创建表
 drop table if exists file_index;
 create table if not exists file_index(
@@ -11,4 +11,5 @@ create table if not exists file_index(
     last_modify_time varchar(100) not null comment '文件最近修改时间'
 );
 
+-- 对文件名进行检索，所以对文件名建索引查询会比较快
 create index file_name on file_index(name);

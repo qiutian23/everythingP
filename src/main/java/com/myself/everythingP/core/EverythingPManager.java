@@ -8,6 +8,7 @@ import com.myself.everythingP.core.dao.impl.FileIndexDaoImpl;
 import com.myself.everythingP.core.index.FileScan;
 import com.myself.everythingP.core.index.impl.FileScanImpl;
 import com.myself.everythingP.core.interceptor.impl.FileIndexInterceptor;
+import com.myself.everythingP.core.interceptor.impl.ThingDeleteInterceptor;
 import com.myself.everythingP.core.model.Condition;
 import com.myself.everythingP.core.model.Thing;
 import com.myself.everythingP.core.moniter.FileWatch;
@@ -16,13 +17,17 @@ import com.myself.everythingP.core.search.FileSearch;
 import com.myself.everythingP.core.search.impl.FileSearchImpl;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class EverythingPManager {
     private static volatile EverythingPManager manager;
@@ -30,9 +35,9 @@ public class EverythingPManager {
     private FileScan fileScan;
     private ExecutorService executorService;
 
-//    private ThingDeleteInterceptor thingInterceptor;
-//    private Thread thingClearThread;
-//    private AtomicBoolean backgroundThreadStatus = new AtomicBoolean(false);
+    private ThingDeleteInterceptor thingInterceptor;
+    private Thread thingClearThread;
+    private AtomicBoolean backgroundThreadStatus = new AtomicBoolean(false);
 
     private FileWatch fileWatch;
 
@@ -60,10 +65,10 @@ public class EverythingPManager {
         this.fileScan = new FileScanImpl(fileIndexDao);
         this.fileScan.interceptors(new FileIndexInterceptor(fileIndexDao));
 
-//        this.thingInterceptor = new ThingDeleteInterceptor(fileIndexDao);
-//        this.thingClearThread = new Thread(this.thingInterceptor);
-//        this.thingClearThread.setDaemon(true);
-//        this.thingClearThread.setName("Thing-Clear-Thread");
+        this.thingInterceptor = new ThingDeleteInterceptor(fileIndexDao);
+        this.thingClearThread = new Thread(this.thingInterceptor);
+        this.thingClearThread.setDaemon(true);
+        this.thingClearThread.setName("Thing-Clear-Thread");
 
         this.fileWatch = new FileWatchImpl(fileIndexDao);
 
@@ -76,19 +81,19 @@ public class EverythingPManager {
     }
 
     public List<Thing> search(Condition condition) {
-        return this.fileSearch.search(condition);
-//                .stream().filter(new Predicate<Thing>() {
-//            @Override
-//            public boolean test(Thing thing) {
-//                String path = thing.getPath();
-//                File file = new File(path);
-//                boolean flag = file.exists();
-//                if (!flag) {
-//                    thingInterceptor.apply(thing);
-//                }
-//                return flag;
-//            }
-//        }).collect(Collectors.toList());
+        return this.fileSearch.search(condition)
+           .stream().filter(new Predicate<Thing>() {
+            @Override
+            public boolean test(Thing thing) {
+                String path = thing.getPath();
+                File file = new File(path);
+                boolean flag = file.exists();
+                if (!flag) {
+                    thingInterceptor.apply(thing);
+                }
+                return flag;
+            }
+        }).collect(Collectors.toList());
     }
 
     public void buildIndex() {
@@ -133,13 +138,13 @@ public class EverythingPManager {
     }
 
 
-//    public void startThingClearThread() {
-//        if (this.backgroundThreadStatus.compareAndSet(false, true)) {
-//            this.thingClearThread.start();
-//        } else {
-//            System.out.println("can not start Thread repeatedly");
-//        }
-//    }
+    public void startThingClearThread() {
+        if (this.backgroundThreadStatus.compareAndSet(false, true)) {
+            this.thingClearThread.start();
+        } else {
+            System.out.println("can not start Thread repeatedly");
+        }
+    }
 
     public void startFileSystemMonitor() {
         EverythingPConfig config = EverythingPConfig.getInstance();

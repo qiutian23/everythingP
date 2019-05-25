@@ -45,6 +45,4 @@ public class FileScanImpl implements FileScan {
     public void interceptors(FileInterceptor interceptor) {
         this.interceptors.add(interceptor);
     }
-
-
 }
